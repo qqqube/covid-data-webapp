@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<head>
+
+<style>
+body {
+  font-family: "Lato", sans-serif;
+}
+
+.sidenav {
+  height: 100%;
+  width: 225px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #384352;
+  overflow-x: hidden;
+  padding-top: 20px;
+}
+
+.sidenav h1 {
+	padding: 6px 8px 6px 16px;
+	font-size: 35px;
+	color: #fbfafc;
+	font-family: copperplate;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 18px;
+  color: #fbfafc;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #e3645f;
+}
+
+.blocks {
+	margin-top:40px;
+	margin-left:290px;
+}
+
+.blocks h1 {
+	font-size:30px;
+	color: #6f8dc9;
+}
+
+.blocks h3 {
+	font-size:12px;
+	color: #8d95a1;
+}
+
+.confirmed_count {
+	margin-left:20px;
+	background-color:#ffffff;
+	text-align: center;
+	width: 180px;
+	height:160px;
+}
+
+.recovered_count {
+	margin-left:20px;
+	background-color:#ffffff;
+	text-align: center;
+	width: 180px;
+	height:160px;
+}
+
+.critical_count {
+	margin-left:20px;
+	background-color:#ffffff;
+	text-align: center;
+	width: 180px;
+	height:160px;
+}
+
+.deaths_count {
+	margin-left:20px;
+	background-color:#ffffff;
+	text-align: center;
+	width: 180px;
+	height:160px;
+}
+
+.last_two_blocks {
+	margin-top:40px;
+}
+
+.radar {
+	margin-top: 40px;
+	margin-left: 40px;
+	background-color:#ffffff;
+	width: 360px;
+	text-align:center;
+}
+
+.radar canvas {
+	margin-left: 10px;
+}
+
+.second-line {
+	margin-top:40px;
+	margin-left:310px;
+	background-color: #ffffff;
+	margin-bottom: 60px;
+	width:780px;
+}
+
+.second-line canvas {
+	margin-left: 10px;
+}
+
+
+body {
+	background-color: #e8e9ed;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+</head>
+<body>
+	<div class="sidenav">
+	  <h1>COVID-19 Statistics</h1>
+	  {% for name in country_names %}
+	  	{% if name == country %}
+	  		<a href="/country?name={{name}}" style="color: #e3645f">{{ name }}</a>
+	  	{% else %}
+	  		<a href="/country?name={{name}}">{{ name }}</a>
+	  	{% endif%}
+	  {% endfor %}
+	</div>
+	<div class="first_line" style="display:flex;">
+		<div class="blocks">
+			<div class="first_two_blocks" style="display:flex;">
+				<div class="confirmed_count">
+					<img src="/static/thumbtack.jpeg" width=30px height=30px><br>
+					<h1>{{ _confirmed }}</h1>
+					<h3>Confirmed Cases</h3>
+				</div>
+				<div class="recovered_count">
+					<img src="/static/thumbtack.jpeg" width=30px height=30px><br>
+					<h1>{{ _recovered }}</h1>
+					<h3> Recovered Cases</h3>
+				</div>
+			</div>
+			<div class="last_two_blocks" style="display:flex;">
+				<div class="critical_count">
+					<img src="/static/thumbtack.jpeg" width=30px height=30px><br>
+					<h1>{{ _critical }}</h1>
+					<h3> Critical Cases</h3>
+				</div>
+				<div class="deaths_count">
+					<img src="/static/thumbtack.jpeg" width=30px height=30px><br>
+					<h1>{{_deaths}}</h1>
+					<h3> Deaths </h3>
+				</div>
+			</div>
+		</div>
+		<div class="radar">
+			<canvas id="radar" style="width:100%;max-width:340px;"></canvas>
+			<script>
+				labels_ = ["ln(confirmed)", "ln(recovered)", "ln(critical)", "ln(deaths)"];
+				datasets_ = [{label: "{{country}}",
+						    data: [{{ ln_confirmed }}, {{ ln_recovered }}, {{ ln_critical }}, {{ ln_deaths }}],
+						    fill: true,
+						    backgroundColor: 'rgb(218, 224, 241)',
+						    borderColor: 'rgb(111, 141, 201)',
+						    pointBackgroundColor: 'rgb(255, 99, 132)',
+						    pointBorderColor: '#fff',
+						    pointHoverBackgroundColor: '#fff',
+						    pointHoverBorderColor: 'rgb(255, 99, 132)'
+						  	}, {
+						    label: "Global",
+						    data: [{{ lnconfirmed }}, {{ lnrecovered }}, {{ lncritical }}, {{ lndeaths }}],
+						    fill: true,
+						    backgroundColor: 'rgb(226, 228, 233)',
+						    borderColor: 'rgb(141, 149, 161)',
+						    pointBackgroundColor: 'rgb(102, 0, 255)',
+						    pointBorderColor: '#fff',
+						    pointHoverBackgroundColor: '#fff',
+						    pointHoverBorderColor: 'rgb(54, 162, 235)'
+						  	}];
+				const data_ = {labels: labels_, datasets: datasets_};
+				const config_ = {
+					  type: 'radar',
+					  data: data_,
+					  options: {
+					    elements: {
+					      line: {
+					        borderWidth: 3
+					      }
+					    }
+					  },
+					};
+				new Chart("radar", config_);
+			</script>
+		</div>
+	</div>
+	<div class="second-line">
+		<canvas id="bar_chart" style="width:100%;max-width:780px"></canvas>
+		<script> 
+			const labels = ["confirmed", "recovered", "critical", "deaths"];
+			const data = {labels:labels, datasets:[{label:"Counts for {{country}}",
+													data: [{{ _confirmed }}, 
+															{{ _recovered }}, 
+															{{ _critical }}, 
+															{{ _deaths }}],
+													backgroundColor: [
+													      'rgb(196, 237, 216)',
+													      'rgb(196, 237, 216)',
+													      'rgb(196, 237, 216)',
+													      'rgb(196, 237, 216)'],
+													borderColor: [
+													      'rgb(196, 237, 216)',
+													      'rgb(196, 237, 216)',
+													      'rgb(196, 237, 216)',
+													      'rgb(196, 237, 216)'],
+													borderWidth: 1}
+													]
+												};
+			const config = {
+				  type: 'bar',
+				  data: data,
+				  options: {
+				    scales: {
+				      y: {
+				        beginAtZero: true
+				      }
+				    }
+				  },
+				};
+			new Chart("bar_chart", config);
+
+		</script>
+	</div>
+	
+</body>
+
+

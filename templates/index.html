@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+<head>
+
+<style>
+body {
+  font-family: "Lato", sans-serif;
+}
+
+.sidenav {
+  height: 100%;
+  width: 225px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #384352;
+  overflow-x: hidden;
+  padding-top: 20px;
+}
+
+.sidenav h1 {
+	padding: 6px 8px 6px 16px;
+	font-size: 35px;
+	color: #fbfafc;
+	font-family: copperplate;
+}
+
+.sidenav a {
+  padding: 6px 8px 6px 16px;
+  text-decoration: none;
+  font-size: 18px;
+  color: #fbfafc;
+  display: block;
+}
+
+.sidenav a:hover {
+  color: #e3645f;
+}
+
+.country_count {
+  margin-top: 40px;
+  margin-left: 270px; /* Same as the width of the sidenav */
+  padding: 0px 10px;
+  background-color: #ffffff;
+  text-align: center;
+  width: 180px;
+  float: left;
+}
+
+.first_two_lines h3 {
+	font-size: 12px;
+	color: #8d95a1;
+}
+
+.first_two_lines h1 {
+	font-size: 30px;
+	color: #e3645f;
+}
+
+.server_count {
+  margin-top: 40px;
+  margin-left: 20px; /* Same as the width of the sidenav */
+  padding: 0px 10px;
+  background-color: #ffffff;
+  text-align: center;
+  width: 180px;
+  float: left;
+}
+
+.new_data {
+  margin-top: 40px;
+  margin-left: 270px; /* Same as the width of the sidenav */
+  padding: 0px 10px;
+  background-color: #ffffff;
+  text-align: center;
+  width: 180px;
+  height: 160px;
+  float: left;
+}
+
+.right_of_blocks {
+	margin-top: 40px;
+	margin-left: 20px;
+	width: 200px;
+	background-color: #ffffff;
+}
+
+.last_line {
+	margin-top: 40px;
+	background-color: #ffffff;
+	margin-left: 270px;
+	margin-bottom: 40px;
+	width: 530px;
+	height: 300px;
+}
+
+.news {
+	margin-top: 40px;
+	margin-bottom: 10px;
+	margin-left:18px;
+	width: 500px;
+	height: 200px;
+	overflow:scroll;
+}
+
+.news h3 {
+	color: #8d95a1;
+	font-size: 15px;
+}
+
+.news a {
+	color: #769c7d;
+	font-size:13px;
+}
+
+.news a:hover {
+	color: #8d95a1;
+}
+
+.sources {
+	margin-left: 20px;
+	margin-top: 40px;
+	background-color: #ffffff;
+	width:390px;
+	height:300px;
+	text-align:center;
+}
+
+.graph {
+	margin-top: 40px;
+	background-color: #ffffff;
+	margin-left: 20px;
+	height: 360px;
+}
+
+.graph canvas {
+	margin-top:55px;
+	margin-left:20px;
+	margin-right: 20px;
+}
+
+
+body {
+	background-color: #e8e9ed;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+  .sidenav a {font-size: 18px;}
+}
+</style>
+</head>
+<body>
+
+<div class="sidenav">
+  <h1>COVID-19 Statistics</h1>
+  {% for name in country_names %}
+  	<a href="/country?name={{name}}">{{ name }}</a>
+  {% endfor %}
+</div>
+
+<div class="first_two_lines" style="display:flex;">
+	<div class="blocks">
+		<div class="line_one" style="display:flex;">
+			<div class="country_count">
+			  <br><h3>Statistics from</h3>
+			  <h1> {{num_countries}} </h1>
+			  <h3> countries collected</h3><br>
+			</div>
+
+			<div class="server_count">
+				<br><h3> Information queried from </h3>
+				<h1> 6 </h1>
+				<h3>servers around the world</h3>
+			</div>
+		</div>
+		<div class="line_two" style="display:flex;">
+			<div class="new_data">
+				<br><h3> New data every </h3>
+				<h1> 15 </h1>
+				<h3>minutes</h3>
+			</div>
+			<div class="right_of_blocks">
+				<br><img src="/static/covid.png" width=200px>
+			</div>
+		</div>
+	</div>
+	<div class="graph">
+		<canvas id="myChart" style="width:100%;max-width:460px"></canvas>
+
+		<script>
+		var xValues = ["confirmed", "recovered", "critical", "deaths"];
+		var yValues = [{{ confirmed }}, {{recovered}}, {{critical}}, {{deaths}}];
+		var barColors = ["rgba(81, 119, 224, 0.4)", "rgba(81, 119, 224, 0.4)", "rgba(81, 119, 224, 0.4)","rgba(81, 119, 224, 0.4)"];
+
+		new Chart("myChart", {
+		  type: "bar",
+		  data: {
+		    labels: xValues,
+		    datasets: [{
+		      backgroundColor: barColors,
+		      data: yValues
+		    }]
+		  },
+		  options: {
+		    legend: {display: false},
+		    title: {
+		      display: true,
+		      text: "Latest Counts"
+		    }
+		  }
+		});
+		</script>
+	</div>
+</div>
+<div class="last_line_wrap" style="display:flex;">
+	<div class="last_line">
+		<div class="news">
+			<h3>Latest U.S. News </h3><br>
+			{% for item in news_lst %}
+				<a href={{item["webUrl"]}}>{{item["title"]}}</a><br><br>
+			{% endfor %}
+		</div>
+	</div>
+	<div class="sources">
+		<br><br><br><br><img src="/static/api-sources.png" width=300px height=180px>
+	</div>
+</div>
+   
+</body>
+</html> 
